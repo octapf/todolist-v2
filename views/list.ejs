@@ -4,23 +4,58 @@
   <h1> <%= listTitle %> </h1>
 </div>
 
-<div class="box">
 
-  <% newListItems.forEach( item => { %>
 
-  <form action="/delete" method="POST">
-    <div class="item">
-      <input type="checkbox" name="checkBoxDelete" value="<%= item._id %>" onChange="this.form.submit()">
-      <p><%=  item.name  %></p>
-    </div>
-  </form>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Lists</th>
+      <th scope="col">Items</th>
+    </tr>
+  </thead>
 
-  <% }) %>
+  <tbody>
+    <tr>
+      
+      <td class="text-center">
+        <% listsEjs.forEach( list => { %>
+        <form action="/deleteList" method="post">
+          <input type="checkbox" name="checkboxList" value="<%= list._id %>" onchange="this.form.submit()">
+          <a href="/<%= list.name %>">
+            <p><%= list.name %></p>
+          </a>
+          <input type="hidden" name="listName" value="<%= listTitle %>">
+        </form>
+        <% }); %>
+      </td>
 
-  <form class="item" action="/" method="post">
-    <input type="text" name="newItem" placeholder="New Item" autocomplete="off">
-    <button type="submit" name="list">+</button>
-  </form>
-</div>
+      <td class="text-center">
+        <% newListItems.forEach( item => { %>
+
+        <form action="/delete" method="POST">
+          <div class="item">
+            <input type="checkbox" name="checkBox" value="<%=item._id%>" onChange="this.form.submit()">
+
+            <p><%=item.name%></p>
+          </div>
+          <input type="hidden" name="listName" value="<%= listTitle %>"></input>
+
+        </form>
+
+        <% }) %>
+
+        <form class="item" action="/" method="post">
+          <input type="text" name="newItem" placeholder="New Item" autocomplete="off">
+          <button class="btn" type="submit" name="list" value="<%= listTitle %>">+</button>
+        </form>
+
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
 
 <%- include("footer") -%>

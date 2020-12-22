@@ -8,7 +8,7 @@ const mongoose = require("mongoose");
 mongoose.connect("mongodb://localhost:27017/todolistDB", {
   useNewUrlParser: true,
   useUnifiedTopology: true
-})
+});
 
 
 // define Schemas
@@ -32,6 +32,7 @@ const Item = mongoose.model("Item", itemsSchema);
 const List = mongoose.model("List", listSchema);
 
 
+
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -39,78 +40,95 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({
   extended: true
 }));
+
 app.use(express.static("public"));
 
-const item1 = new Item({
-  name: "Do laundry"
-});
 
-const item2 = new Item({
-  name: "Workout"
-});
 
-const item3 = new Item({
-  name: "Play videoGames"
-});
-
-const defaultItems = [item1, item2, item3];
 
 app.get("/", function (req, res) {
+
+  const itemName = req.body.newItem;
+  const listName = req.body.list;
+  let lists = [];
+
+  List.find({}, (err, result) => {
+    if (result) {
+      console.log(result);
+      lists = result;
+    } else {
+      const list = new List({
+        name: "My new list",
+        items: [itemName]
+      });
+      list.save();
+    }
+    
+  });
 
   Item.find({}, (err, result) => {
 
     if (result.length === 0) {
-      Item.insertMany(defaultItems, (err) => {
-        if (err) {
-          console.error(err);
-        } else {
-          console.log("Successfully saved default items to DB.");
-        }
+      res.render("list", {
+        listsEjs: lists,
+        listTitle: "Create a new item",
+        newListItems: result
       });
-      res.redirect("/");
+
     } else {
       res.render("list", {
+        listsEjs: lists,
         listTitle: "Today",
         newListItems: result
+
       });
     }
   });
+
+
+
+
 });
 
 
 app.get("/:customListName", (req, res) => {
 
   const listName = req.params.customListName;
+  let lists = [];
 
-  List.findOne({ name: listName }, (err, result) => {
+  List.find({}, (err, result) => {
+    if (!err) {
+      lists = result;
+    }
+  });
+
+  List.findOne({
+    name: listName
+  }, (err, result) => {
     if (result) {
 
-      console.log("Exists!");
+
 
       res.render("list", {
-        listTitle: listName,
-        newListItems: [result]
+        listTitle: result.name,
+        newListItems: result.items,
+        listsEjs: lists
       });
-      
+
     } else {
-      console.log("Doens't exist!");
+
 
       const list = new List({
         name: listName,
-        items: defaultItems
+        items: []
       });
 
       list.save();
-      res.redirect( "/" + listName );
+      res.redirect("/" + listName);
     }
-  } );
-  
+  });
 
 
-
-});
-
-app.post("/:newList", (req, res) => {
 
 });
 
@@ -118,32 +136,70 @@ app.post("/:newList", (req, res) => {
 app.post("/", function (req, res) {
 
   const itemName = req.body.newItem;
+  const listName = req.body.list;
 
   const item = new Item({
     name: itemName
   });
 
-  item.save();
+  if (listName === "Today") {
 
-  res.redirect("/");
-
+    item.save();
+    res.redirect("/");
+  } else {
+    List.findOne({
+      name: listName
+    }, (err, foundList) => {
+      foundList.items.push(item);
+      foundList.save();
+      res.redirect("/" + listName);
+    });
+  }
 });
 
 app.post("/delete", (req, res) => {
-  const itemId = req.body.checkBoxDelete;
+  const itemId = req.body.checkBox;
+  const listName = req.body.listName;
+  console.log("im inside /delete");
 
 
-  Item.findByIdAndRemove(itemId, (err) => {
-    if (!err) {
-      console.log("Successfully deleted document.");
-      res.redirect("/");
-    }
-  });
-
-
-
+  if (listName === "Today") {
+    Item.findByIdAndRemove(itemId, (err) => {
+      if (!err) {
+        console.log("Successfully deleted document.");
+        res.redirect("/");
+      } else {
+        console.log(err);
+      }
+    });
+  } else {
+    List.findOneAndUpdate({
+      name: listName
+    }, {
+      $pull: {
+        items: {
+          _id: itemId
+        }
+      }
+    }, (err, result) => {
+      console.log(result);
+      res.redirect("/" + listName);
+    });
+  }
 });
 
+app.post("/deleteList", (req, res) => {
+  const listId = req.body.checkboxList;
+  const listName = req.body.listName;
+
+  List.findByIdAndRemove(listId, (err) => {
+    if (err) {
+      console.error(err);
+    } else {
+      res.redirect("/");
+    }
+  })
+})
 
 
 app.listen(3000, function () {

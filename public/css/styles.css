@@ -45,9 +45,8 @@ input[type="checkbox"] {
 
 p {
   margin: 0;
-  padding: 20px;
   font-size: 20px;
-  font-weight: 200;
+  font-weight: 100;
   color: #00204a;
 }
 
@@ -56,7 +55,7 @@ form.item {
   margin-left: 20px;
 }
 
-button {
+.btn {
   min-height: 50px;
   width: 50px;
   border-radius: 50%;
@@ -92,5 +91,13 @@ input[type="text"]:focus {
 footer {
   color: white;
   color: rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.table {
+  text-align: center; 
+}
+
+.table td {
   text-align: center;
 }
