@@ -1,7 +1,8 @@
 <%- include("header") -%>
 
 <div class="box" id="heading">
-  <h1> <%= listTitle %> </h1>
+  <h1><%= listTitle %></h1>
+  <p><%= errorEjs %></p>
 </div>
 
 
@@ -14,10 +15,10 @@
     </tr>
   </thead>
 
-  <tbody>
-    <tr>
+  <tbody class="">
+    <tr class="">
       
-      <td class="text-center">
+      <td class="col-6">
         <% listsEjs.forEach( list => { %>
         <form action="/deleteList" method="post">
           <input type="checkbox" name="checkboxList" value="<%= list._id %>" onchange="this.form.submit()">
@@ -29,7 +30,7 @@
         <% }); %>
       </td>
 
-      <td class="text-center">
+      <td class="col-6">
         <% newListItems.forEach( item => { %>
 
         <form action="/delete" method="POST">
